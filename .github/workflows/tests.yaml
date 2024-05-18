@@ -33,6 +33,6 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: "Update main"
         branch: "create-pr/main"
-        base: "dev"
+        base: "main"
         title: "Update main"
         body: "Update main with changes from dev"
