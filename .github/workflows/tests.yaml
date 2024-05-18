@@ -46,4 +46,4 @@ jobs:
         assignees: ghhwer
         reviewers: ghhwer
         milestone: 1
-        draft: false
+        draft: true
