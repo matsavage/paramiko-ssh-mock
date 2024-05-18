@@ -30,6 +30,7 @@ jobs:
       if: success()
       uses: peter-evans/create-pull-request@v6
       with:
+        origin-branch: dev
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: "Update main"
         branch: "create-pr/main"
