@@ -36,7 +36,7 @@ jobs:
     - name: Build package
       if: success()
       run: python setup.py sdist
-    - name: upload windows dists
+    - name: upload dists
       uses: actions/upload-artifact@v4
       with:
         name: release-dists
