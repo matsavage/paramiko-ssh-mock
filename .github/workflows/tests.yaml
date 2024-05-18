@@ -33,17 +33,6 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: "Update main"
         branch: "create-pr/main"
-        base: "main"
+        base: "dev"
         title: "Update main"
         body: "Update main with changes from dev"
-
-    - name: Create Pull Request to published
-      if: success()
-      uses: peter-evans/create-pull-request@v3
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: "Update published"
-        branch: "create-pr/published"
-        base: "published"
-        title: "Update published"
-        body: "Update published with changes from dev"
