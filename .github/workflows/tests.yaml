@@ -5,7 +5,7 @@ on:
     branches: [ dev ]
 
 jobs:
-  test:
+  test-and-pr:
 
     runs-on: ubuntu-latest
 
