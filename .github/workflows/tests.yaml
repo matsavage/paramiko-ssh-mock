@@ -28,11 +28,11 @@ jobs:
     
     - name: Create Pull Request to main
       if: success()
-      uses: peter-evans/create-pull-request@v3
+      uses: peter-evans/create-pull-request@v6
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: "Update main"
         branch: "create-pr/main"
         base: "main"
-        title: "Update main"
+        title: "Update to main"
         body: "Update main with changes from dev"
