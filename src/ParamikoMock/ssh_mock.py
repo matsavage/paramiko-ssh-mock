@@ -13,7 +13,25 @@ class SingletonMeta(type):
             cls._instances[cls] = instance
         return cls._instances[cls]
 
+class SFTPFileMock():
+    written = []
+
+    def close(self):
+        pass
+
+    def write(self, data):
+        self.written.append(data)
+
+class SFTPClientMock():
+    sftp_file_mock = SFTPFileMock()
+    def open(self, filename, mode="r", bufsize=-1):
+        return self.sftp_file_mock
+    
+    def close(self):
+        pass
+
 class SSHClientMock():
+    sftp_client_mock = SFTPClientMock()
     def __init__(self, *args, **kwds):
         self.selected_host = None
         self.command_responses = {}
@@ -23,6 +41,9 @@ class SSHClientMock():
     
     def set_missing_host_key_policy(self, policy):
         pass
+
+    def open_sftp(self):
+        return self.sftp_client_mock
     
     def connect(self, host, port, username, password, banner_timeout):
         self.selected_host = f'{host}:{port}'

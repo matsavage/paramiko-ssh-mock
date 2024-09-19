@@ -1,6 +1,6 @@
 import paramiko
 from io import StringIO
-from src.ParamikoMock.ssh_mock import SSHClientMock, SSHCommandMock, SSHMockEnvron, SSHCommandFunctionMock
+from src.ParamikoMock.ssh_mock import SSHClientMock, SSHCommandMock, SSHMockEnvron, SSHCommandFunctionMock, SFTPFileMock
 from unittest.mock import patch
 
 def example_function_1():
@@ -42,6 +42,23 @@ def example_function_3():
     stdin, stdout, stderr = client.exec_command('custom_command --param1 value1')
     return stdout.read()
 
+def example_function_sftp_write():
+    client = paramiko.SSHClient()
+    client.load_system_host_keys()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    # Some example of connection
+    client.connect('some_host_4',
+                    port=22,
+                    username='root',
+                    password='root',
+                    banner_timeout=10)
+    # Some example of a remote file write
+    sftp = client.open_sftp()
+    file = sftp.open('/tm/afile.txt', 'w')
+    file.write('Something to put in the remote file')
+    file.close()
+    sftp.close()
+
 def test_example_function_1():
     SSHMockEnvron().add_responses_for_host('some_host', 22, {
         'ls -l': SSHCommandMock('', 'ls output', '')
@@ -76,3 +93,14 @@ def test_example_function_3():
     with patch('paramiko.SSHClient', new=SSHClientMock): 
         output = example_function_3()
         assert output == 'value1'
+
+def test_example_function_sftp_write():
+    ssh_mock = SSHClientMock()
+
+    SSHMockEnvron().add_responses_for_host('some_host_4', 22, {
+        'ls -l': SSHCommandMock('', 'ls output', '')
+    }, 'root', 'root')
+    # patch the paramiko.SSHClient with the mock
+    with patch('paramiko.SSHClient', new=SSHClientMock): 
+        example_function_sftp_write()
+        assert 'Something to put in the remote file' == ssh_mock.sftp_client_mock.sftp_file_mock.written[0]
