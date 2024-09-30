@@ -15,12 +15,16 @@ class SingletonMeta(type):
 
 class SFTPFileMock():
     written = []
+    file_content = None
 
     def close(self):
         pass
 
     def write(self, data):
         self.written.append(data)
+    
+    def read(self, size=None):
+        return self.file_content
 
 class SFTPClientMock():
     sftp_file_mock = SFTPFileMock()
