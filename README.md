@@ -94,6 +94,24 @@ def test_example_function_3():
         assert output == 'value1'
 ```
 
+### Example 4 
+
+This example shows how to mock an SFTP connection to a host named `some_host_4` on port `22`. The `ls -l` command is mocked to return the string `'ls output'`. The content of a remote file is mocked to return the string `'Something from the remote file'`.
+
+```python
+def test_example_function_sftp_read():
+    ssh_mock = SSHClientMock()
+
+    SSHMockEnvron().add_responses_for_host('some_host_4', 22, {
+        'ls -l': SSHCommandMock('', 'ls output', '')
+    }, 'root', 'root')
+    ssh_mock.sftp_client_mock.sftp_file_mock.file_content = 'Something from the remote file'
+    # patch the paramiko.SSHClient with the mock
+    with patch('paramiko.SSHClient', new=SSHClientMock): 
+        output = example_function_sftp_read()
+        assert 'Something from the remote file' == output
+```
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
