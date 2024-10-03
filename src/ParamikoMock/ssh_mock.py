@@ -36,6 +36,7 @@ class SFTPClientMock():
 
 class SSHClientMock():
     sftp_client_mock = SFTPClientMock()
+    called = []
     def __init__(self, *args, **kwds):
         self.selected_host = None
         self.command_responses = {}
@@ -58,10 +59,15 @@ class SSHClientMock():
             if set_credentials != (username, password):
                 raise BadHostKeyException(host, None, 'Invalid credentials')
         self.command_responses = SSHMockEnvron().commands_response[self.selected_host]
+        self.clear_called_commands()
+
+    def clear_called_commands(self):
+        self.called.clear()
     
     def exec_command(self, command):
         if self.selected_host is None:
             raise NoValidConnectionsError('No valid connections')
+        self.called.append(command)
         response = self.command_responses.get(command)
         if response is None:
             # check if there is a command that can be used as regexp

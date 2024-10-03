@@ -42,6 +42,19 @@ def example_function_3():
     stdin, stdout, stderr = client.exec_command('custom_command --param1 value1')
     return stdout.read()
 
+def example_function_multiple_calls():
+    client = paramiko.SSHClient()
+    client.load_system_host_keys()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    # Some example of connection
+    client.connect('some_host',
+                    port=22,
+                    username='root',
+                    password='root',
+                    banner_timeout=10)
+    client.exec_command('ls -l')
+    client.exec_command('ls -al')
+
 def example_function_sftp_write():
     client = paramiko.SSHClient()
     client.load_system_host_keys()
@@ -111,6 +124,16 @@ def test_example_function_3():
     with patch('paramiko.SSHClient', new=SSHClientMock): 
         output = example_function_3()
         assert output == 'value1'
+
+def test_example_function_verify_commands_were_called():
+    ssh_mock = SSHClientMock()
+    SSHMockEnvron().add_responses_for_host('some_host', 22, {
+        're(ls.*)': SSHCommandMock('', 'ls output', '')
+    }, 'root', 'root')
+    with patch('paramiko.SSHClient', new=SSHClientMock):
+        example_function_multiple_calls()
+        assert 'ls -l' == ssh_mock.called[0]
+        assert 'ls -al' == ssh_mock.called[1]
 
 def test_example_function_sftp_write():
     ssh_mock = SSHClientMock()
