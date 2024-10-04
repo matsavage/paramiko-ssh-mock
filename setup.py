@@ -10,9 +10,9 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name='paramiko-mock',
-    version='0.0.2',
+    version='0.0.3',
     description='Mock for paramiko library',
-    author='Caio Cominato',
+    author='Caio Cominato, Daniel Beaudry',
     author_email='caiopetrellicominato@gmail.com',
     packages=find_packages('src'),
     package_dir={'': 'src'},
