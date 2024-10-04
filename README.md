@@ -103,6 +103,24 @@ from ParamikoMock import SSHMockEnvron, SSHCommandMock
 from unittest.mock import patch
 import paramiko
 
+def example_function_sftp_read():
+    client = paramiko.SSHClient()
+    client.load_system_host_keys()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    # Some example of connection
+    client.connect('some_host_4',
+                    port=22,
+                    username='root',
+                    password='root',
+                    banner_timeout=10)
+    # Some example of a remote file write
+    sftp = client.open_sftp()
+    file = sftp.open('/tmp/afileToRead.txt', 'r')
+    output = file.read()
+    file.close()
+    sftp.close()
+    return output
+
 def test_example_function_sftp_write():
     ssh_mock = SSHClientMock()
 
@@ -134,6 +152,19 @@ This example shows how to track multiple commands executed in a single SSH sessi
 ```python
 from ParamikoMock import SSHMockEnvron, SSHCommandMock
 from unittest.mock import patch
+
+def example_function_multiple_calls():
+    client = paramiko.SSHClient()
+    client.load_system_host_keys()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    # Some example of connection
+    client.connect('some_host',
+                    port=22,
+                    username='root',
+                    password='root',
+                    banner_timeout=10)
+    client.exec_command('ls -l')
+    client.exec_command('ls -al')
 
 def test_example_function_verify_commands_were_called():
     ssh_mock = SSHClientMock()
