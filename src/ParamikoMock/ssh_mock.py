@@ -58,7 +58,7 @@ class SSHClientMock():
             if set_credentials != (username, password):
                 raise BadHostKeyException(host, None, 'Invalid credentials')
         self.command_responses = SSHMockEnvron().commands_response[self.selected_host]
-        self.init_kwargs = kwargs
+        self.last_connect_kwargs = kwargs
         self.clear_called_commands()
 
     def clear_called_commands(self):
