@@ -1,6 +1,7 @@
 import paramiko
 from io import StringIO
-from src.ParamikoMock.ssh_mock import SSHClientMock, SSHCommandMock, SSHMockEnvron, SSHCommandFunctionMock, SFTPFileMock
+from src.ParamikoMock.ssh_mock import SSHClientMock, SSHCommandMock, SSHMockEnvron, SSHCommandFunctionMock
+from src.ParamikoMock.sftp_mock import SFTPClientMock, SFTPFileMock 
 from unittest.mock import patch
 
 def example_function_1():
