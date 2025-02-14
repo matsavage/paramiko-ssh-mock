@@ -2,6 +2,7 @@ from abc import abstractmethod, ABC
 from io import StringIO
 import re
 from paramiko.ssh_exception import BadHostKeyException, NoValidConnectionsError
+from .sftp_mock import SFTPClientMock
 
 # Singleton
 class SingletonMeta(type):
@@ -12,27 +13,6 @@ class SingletonMeta(type):
             instance = super().__call__(*args, **kwargs)
             cls._instances[cls] = instance
         return cls._instances[cls]
-
-class SFTPFileMock():
-    written = []
-    file_content = None
-
-    def close(self):
-        pass
-
-    def write(self, data):
-        self.written.append(data)
-    
-    def read(self, size=None):
-        return self.file_content
-
-class SFTPClientMock():
-    sftp_file_mock = SFTPFileMock()
-    def open(self, filename, mode="r", bufsize=-1):
-        return self.sftp_file_mock
-    
-    def close(self):
-        pass
 
 class SSHClientMock():
     sftp_client_mock = SFTPClientMock()
@@ -50,7 +30,26 @@ class SSHClientMock():
     def open_sftp(self):
         return self.sftp_client_mock
     
-    def connect(self, host, port, username, password, banner_timeout):
+    def set_log_channel(self, log_channel):
+        pass
+    
+    def get_host_keys(self):
+        pass
+    
+    def save_host_keys(self, filename):
+        pass
+    
+    def load_host_keys(self, filename):
+        pass
+    
+    def load_system_host_keys(self, filename=None):
+        pass
+    
+    def connect(
+        self, host, 
+        port=22, username=None, password=None, 
+        **kwargs
+    ):
         self.selected_host = f'{host}:{port}'
         if self.selected_host not in SSHMockEnvron().commands_response:
             raise BadHostKeyException(host, None, 'No valid responses for this host')
@@ -59,12 +58,13 @@ class SSHClientMock():
             if set_credentials != (username, password):
                 raise BadHostKeyException(host, None, 'Invalid credentials')
         self.command_responses = SSHMockEnvron().commands_response[self.selected_host]
+        self.last_connect_kwargs = kwargs
         self.clear_called_commands()
 
     def clear_called_commands(self):
         self.called.clear()
     
-    def exec_command(self, command):
+    def exec_command(self, command, bufsize=-1, timeout=None, get_pty=False, environment=None):
         if self.selected_host is None:
             raise NoValidConnectionsError('No valid connections')
         self.called.append(command)
@@ -80,6 +80,9 @@ class SSHClientMock():
             if response is None:
                 raise NotImplementedError('No valid response for this command')
         return response(self, command)
+    
+    def invoke_shell(self, term='vt100', width=80, height=24, width_pixels=0, height_pixels=0, environment=None):
+        pass
     
     def close(self):
         self.selected_commands = None
