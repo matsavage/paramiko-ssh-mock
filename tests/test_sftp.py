@@ -1,6 +1,7 @@
 import paramiko
 from io import StringIO
-from src.ParamikoMock.ssh_mock import SSHClientMock, SSHCommandMock, SSHMockEnvron, SSHCommandFunctionMock
+from src.ParamikoMock.mocked_env import ParamikoMockEnviron
+from src.ParamikoMock.ssh_mock import SSHClientMock, SSHCommandMock, SSHCommandFunctionMock
 from src.ParamikoMock.sftp_mock import SFTPClientMock, SFTPFileMock 
 from unittest.mock import patch
 
@@ -43,24 +44,27 @@ def example_function_sftp_read():
 # Actual tests
 # -- This ensures that the ParamikoMock is working as expected
 def test_example_function_sftp_write():
-    ssh_mock = SSHClientMock()
-
-    SSHMockEnvron().add_responses_for_host('some_host_4', 22, {
-        'ls -l': SSHCommandMock('', 'ls output', '')
-    }, 'root', 'root')
+    # Setup the mock environment
+    ParamikoMockEnviron().add_responses_for_host('some_host_4', 22, {}, 'root', 'root')
     # patch the paramiko.SSHClient with the mock
     with patch('paramiko.SSHClient', new=SSHClientMock): 
         example_function_sftp_write()
-        assert 'Something to put in the remote file' == ssh_mock.sftp_client_mock.sftp_file_mock.written[0]
+        # Get the file content from the mock filesystem
+        mock_file = ParamikoMockEnviron().get_mock_file_for_host('some_host_4', 22, '/tmp/afileToWrite.txt')
+        # Check if the content is the same as the one written
+        assert 'Something to put in the remote file' == mock_file.file_content
+    ParamikoMockEnviron().cleanup_environment()
 
 def test_example_function_sftp_read():
-    ssh_mock = SSHClientMock()
-
-    SSHMockEnvron().add_responses_for_host('some_host_4', 22, {
-        'ls -l': SSHCommandMock('', 'ls output', '')
-    }, 'root', 'root')
-    ssh_mock.sftp_client_mock.sftp_file_mock.file_content = 'Something from the remote file'
+    # Setup the mock environment
+    ParamikoMockEnviron().add_responses_for_host('some_host_4', 22, {}, 'root', 'root')
+    # Create a mock file to be read
+    mock_file = SFTPFileMock()
+    mock_file.file_content = 'Something from the remote file'
+    # Add the mocked file to the host
+    ParamikoMockEnviron().add_mock_file_for_host('some_host_4', 22, '/tmp/afileToRead.txt', mock_file)
     # patch the paramiko.SSHClient with the mock
     with patch('paramiko.SSHClient', new=SSHClientMock): 
         output = example_function_sftp_read()
         assert 'Something from the remote file' == output
+    ParamikoMockEnviron().cleanup_environment()
