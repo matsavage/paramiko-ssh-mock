@@ -3,16 +3,28 @@ from io import StringIO
 import re
 from paramiko.ssh_exception import BadHostKeyException, NoValidConnectionsError
 from .sftp_mock import SFTPClientMock
+from .metaclasses import SingletonMeta
+from .exceptions import BadSetupError
 
-# Singleton
-class SingletonMeta(type):
-    _instances = {}
+# SSHMockEnvron is a Singleton class that stores the responses for the SSHClientMock
+class SSHMockEnvron(metaclass=SingletonMeta):
+    def __init__(self):
+        self.__commands_response__ = {}
+        self.__device_credentials__ = {}
+    
+    def add_responses_for_host(self, host, port, responses: dict[str, 'SSHResponseMock'], username=None, password=None):
+        self.__commands_response__[f'{host}:{port}'] = responses
+        if username and password:
+            self.__device_credentials__[f'{host}:{port}'] = (username, password)
+    
+    def cleanup_environment(self):
+        self.__commands_response__ = {}
+    
+    def get_credentials_for_host(self, host):
+        return self.__device_credentials__.get(host) or (_ for _ in ()).throw(BadSetupError('No credentials set for this host'))
 
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            instance = super().__call__(*args, **kwargs)
-            cls._instances[cls] = instance
-        return cls._instances[cls]
+    def get_command_response_for_host(self, host):
+        return self.__commands_response__.get(host) or (_ for _ in ()).throw(BadSetupError('No responses set for this host'))
 
 class SSHClientMock():
     sftp_client_mock = SFTPClientMock()
@@ -51,13 +63,12 @@ class SSHClientMock():
         **kwargs
     ):
         self.selected_host = f'{hostname}:{port}'
-        if self.selected_host not in SSHMockEnvron().commands_response:
-            raise BadHostKeyException(hostname, None, 'No valid responses for this host')
-        set_credentials = SSHMockEnvron().router_credentials.get(self.selected_host)
+        self.command_responses = SSHMockEnvron().get_command_response_for_host(self.selected_host)
+        set_credentials = SSHMockEnvron().get_credentials_for_host(self.selected_host)
         if set_credentials is not None:
             if set_credentials != (username, password):
                 raise BadHostKeyException(hostname, None, 'Invalid credentials')
-        self.command_responses = SSHMockEnvron().commands_response[self.selected_host]
+        
         self.last_connect_kwargs = kwargs
         self.clear_called_commands()
 
@@ -88,23 +99,21 @@ class SSHClientMock():
         self.selected_commands = None
         self.command_responses = {}
 
+    def get_called_commands(self):
+        return self.called
+    
+    def assert_command_was_called(self, command):
+        assert command in self.called  
+    
+    def assert_command_called_on_index(self, index, command):
+        if len(self.called) <= index:
+            raise AssertionError(f'Command was not called on index {index}')
+        assert self.called[index] == command
+
 class SSHResponseMock(ABC):
     @abstractmethod
     def __call__(self, ssh_client_mock: SSHClientMock, command:str):
         pass
-
-class SSHMockEnvron(metaclass=SingletonMeta):
-    def __init__(self):
-        self.commands_response = {}
-        self.router_credentials = {}
-    
-    def add_responses_for_host(self, host, port, responses: dict[str, SSHResponseMock], username=None, password=None):
-        self.commands_response[f'{host}:{port}'] = responses
-        if username and password:
-            self.router_credentials[f'{host}:{port}'] = (username, password)
-    
-    def cleanup_environment(self):
-        self.commands_response = {}
 
 class SSHCommandMock(SSHResponseMock):
     def __init__(self, stdin, stdout, stderr):

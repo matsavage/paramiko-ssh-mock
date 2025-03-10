@@ -14,7 +14,6 @@ class SFTPFileMock():
     
     def read(self, size=None):
         return self.file_content
-    
 
 class SFTPClientMock():
     sftp_file_mock = SFTPFileMock()
