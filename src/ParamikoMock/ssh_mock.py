@@ -46,17 +46,17 @@ class SSHClientMock():
         pass
     
     def connect(
-        self, host, 
+        self, hostname, 
         port=22, username=None, password=None, 
         **kwargs
     ):
-        self.selected_host = f'{host}:{port}'
+        self.selected_host = f'{hostname}:{port}'
         if self.selected_host not in SSHMockEnvron().commands_response:
-            raise BadHostKeyException(host, None, 'No valid responses for this host')
+            raise BadHostKeyException(hostname, None, 'No valid responses for this host')
         set_credentials = SSHMockEnvron().router_credentials.get(self.selected_host)
         if set_credentials is not None:
             if set_credentials != (username, password):
-                raise BadHostKeyException(host, None, 'Invalid credentials')
+                raise BadHostKeyException(hostname, None, 'Invalid credentials')
         self.command_responses = SSHMockEnvron().commands_response[self.selected_host]
         self.last_connect_kwargs = kwargs
         self.clear_called_commands()
