@@ -179,8 +179,8 @@ def test_example_function_verify_commands_were_called():
 
 ## Contributing
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-Please make sure to update tests as appropriate.
+Constributions are welcome. 
+Please work on filing an issue before submitting a pull request, so that we can discuss the changes you would like to make.
 
 [Github](https://github.com/ghhwer/paramiko-ssh-mock)
 
