@@ -66,6 +66,15 @@ class ParamikoMockEnviron(metaclass=SingletonMeta):
         device = self._get_remote_device(f'{host}:{port}')
         return device.filesystem.get_file(path)
     
+    def add_local_file(self, path, file_mock:'LocalFileMock'):
+        self.__local_filesystem__.add_file(path, file_mock)
+    
+    def remove_local_file(self, path):
+        self.__local_filesystem__.remove_file(path)
+    
+    def get_local_file(self, path):
+        return self.__local_filesystem__.get_file(path)
+        
     # Asserts
     def assert_command_was_executed(self, host, port, command):
         device = self._get_remote_device(f'{host}:{port}')

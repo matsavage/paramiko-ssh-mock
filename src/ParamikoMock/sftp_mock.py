@@ -1,6 +1,7 @@
 import time
 import os
 from paramiko import SFTPAttributes
+from .local_filesystem_mock import LocalFileMock, LocalFilesystemMock
 from .exceptions import BadSetupError
 
 # SFTPFileSystem is a class that stores the file system for the SFTPClientMock
@@ -31,7 +32,7 @@ class SFTPFileMock():
         return self.file_content
 
 class SFTPClientMock():
-    def __init__(self, file_system:SFTPFileSystem=None, local_filesystem=None):
+    def __init__(self, file_system:SFTPFileSystem=None, local_filesystem:LocalFilesystemMock=None):
         if file_system is None:
             raise BadSetupError("file_system is required")
         if local_filesystem is None:
@@ -50,8 +51,17 @@ class SFTPClientMock():
         pass
 
     def put(self, localpath, remotepath, callback=None, confirm=True):
+        # Check if localpath exists
+        mock_local_file = self.__local_filesystem__.get_file(localpath)
+        if mock_local_file is None:
+            raise FileNotFoundError(f"File not found: {localpath}")
+        sftp_file_mock = SFTPFileMock()
+        sftp_file_mock.file_content = mock_local_file.file_content
+        self.__remote_file_system__.add_file(remotepath, sftp_file_mock)
+        # Write the content to the remote filesystem
+        size = len(sftp_file_mock.file_content)
+        
         # Creating a fake os.stat_result object
-        size = len(self.sftp_file_mock.file_content)
         fake_stat = os.stat_result((
             33206,   # st_mode (file mode)
             1234567, # st_ino (inode number)
@@ -73,3 +83,13 @@ class SFTPClientMock():
         else:
             s = SFTPAttributes()
         return s
+
+    def get(self, remotepath, localpath, callback=None):
+        file = self.__remote_file_system__.get_file(remotepath)
+        if file is None:
+            raise FileNotFoundError(f"File not found: {remotepath}")
+        # Write the content to the local filesystem
+        local_file = LocalFileMock()
+        local_file.file_content = file.file_content
+        self.__local_filesystem__.add_file(localpath, local_file)
+    

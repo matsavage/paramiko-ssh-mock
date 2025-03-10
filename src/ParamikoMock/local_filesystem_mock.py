@@ -2,8 +2,8 @@
 class LocalFilesystemMock():
     file_system: dict[str, "LocalFileMock"] = {}
 
-    def add_file(self, path, content):
-        self.file_system[path] = content
+    def add_file(self, path:str, file_mock:"LocalFileMock"):
+        self.file_system[path] = file_mock
 
     def get_file(self, path):
         return self.file_system.get(path)
@@ -14,14 +14,4 @@ class LocalFilesystemMock():
 class LocalFileMock():
     write_history = []
     file_content = None
-
-    def close(self):
-        pass
-
-    def write(self, data):
-        self.write_history.append(data)
-        self.file_content = data
-    
-    def read(self, size=None):
-        return self.file_content
 
