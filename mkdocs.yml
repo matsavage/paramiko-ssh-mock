@@ -4,6 +4,7 @@ theme:
 nav:
   - Home: index.md
   - Usage: usage.md
+  - Contributing: contributing.md
 plugins:
   - search
   - mkdocs-autoapi:
