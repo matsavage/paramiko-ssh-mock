@@ -14,45 +14,53 @@ The `Coordinator` is a singleton class that manages the mock environment. It is 
 ```mermaid
 ---
 config:
-    markdownAutoWrap: true
+  markdownAutoWrap: true
 ---
 flowchart TD
  subgraph subGraph0["**Coordinator** (_Singleton_)"]
-                A(["ParamikoMockEnviron"])
-    end
+        A(["ParamikoMockEnviron"])
+  end
  subgraph subGraph1["**Patched Class**"]
-                B(["SSHClientMock"])
-    end
- subgraph subGraph2["**Internal Representations**"]
-                C(["MockRemoteDevice"])
-                F(["LocalFilesystemMock"])
-                E(["SFTPFileSystem"])
-    end
- subgraph subGraph3["**Mocked Paramiko Classes**"]
-                D(["SFTPClientMock"])
-    end
- subgraph subGraph4["**User Defined Objects**"]
-                G(["LocalFileMock"])
-                H(["LocalDirectoryMock"])
-                I(["SSHCommandMock"])
-    end
-        A -- Manages --> C & F
-        B -- Uses --> C
-        B -- Opens --> D
-        C -- Has --> E
-        D <-- Uses --> F & E
-        F <-- Has --> H
-        E <-- Has --> G
-        C <-- Has --> I
-        style A fill:#aaaafa,stroke:#000,stroke-width:2px
-        style B fill:#aafaaa,stroke:#000,stroke-width:2px
-        style C fill:#aafafa,stroke:#000,stroke-width:2px
-        style F fill:#aafafa,stroke:#000,stroke-width:2px
-        style E fill:#aafafa,stroke:#000,stroke-width:2px
-        style D fill:#fafaaa,stroke:#000,stroke-width:2px
-        style G fill:#aaaafa,stroke:#000,stroke-width:2px
-        style H fill:#aaaafa,stroke:#000,stroke-width:2px
-        style I fill:#aaaafa,stroke:#000,stroke-width:2px
+        B(["SSHClientMock"])
+        D(["SFTPClientMock"])
+  end
+ subgraph subGraph2[" "]
+        C(["MockRemoteDevice"])
+        F(["LocalFilesystemMock"])
+        E(["SFTPFileSystem"])
+  end
+ subgraph subGraph4["**Mock Objects**"]
+        G(["SFTPFileMock"])
+        H(["LocalFileMock"])
+        I(["SSHCommandMock"])
+  end
+ subgraph s1["ParamikoMock"]
+        subGraph0
+        subGraph1
+        subGraph2
+        subGraph4
+  end
+    B -- Uses --- C
+    B -- Opens --- D
+    C -- Has --- E & I
+    F -- Has --- H
+    E -- Has --- G
+    D -- Uses --- C & F
+    subGraph0 -- Manages --> subGraph2
+    style A fill:#aaaafa,stroke:#000,stroke-width:2px
+    style B fill:#aafaaa,stroke:#000,stroke-width:2px
+    style D fill:#fafaaa,stroke:#000,stroke-width:2px
+    style C fill:#aafafa,stroke:#000,stroke-width:2px
+    style F fill:#119191,stroke:#000,stroke-width:2px,color:#000000
+    style E fill:#119191,stroke:#000,stroke-width:2px,color:#000000
+    style G fill:#aaaafa,stroke:#000,stroke-width:2px
+    style H fill:#aaaafa,stroke:#000,stroke-width:2px
+    style I fill:#aaaafa,stroke:#000,stroke-width:2px
+    style subGraph0 stroke:#000000,fill:#d0d0d0,color:#000000
+    style subGraph1 stroke:#000000,color:#000000,fill:#FFFFFF
+    style subGraph2 stroke:#000000,fill:#FFFFFF,color:#000000
+    style subGraph4 stroke:#000000,fill:#d0d0d0,color:#000000
+    style s1 stroke:#000000,fill:#FFFFFF
 ```
 ## Quick Start
 
