@@ -1,9 +1,11 @@
 import paramiko
 from io import StringIO
-from src.ParamikoMock.ssh_mock import SSHClientMock, SSHCommandMock, SSHMockEnvron, SSHCommandFunctionMock
+from src.ParamikoMock.mocked_env import ParamikoMockEnviron
+from src.ParamikoMock.ssh_mock import SSHClientMock, SSHCommandMock, SSHCommandFunctionMock
 from src.ParamikoMock.sftp_mock import SFTPClientMock, SFTPFileMock 
 from unittest.mock import patch
 
+# Functions below are examples of what an application could look like
 def example_function_1():
     client = paramiko.SSHClient()
     client.load_system_host_keys()
@@ -56,43 +58,10 @@ def example_function_multiple_calls():
     client.exec_command('ls -l')
     client.exec_command('ls -al')
 
-def example_function_sftp_write():
-    client = paramiko.SSHClient()
-    client.load_system_host_keys()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    # Some example of connection
-    client.connect('some_host_4',
-                    port=22,
-                    username='root',
-                    password='root',
-                    banner_timeout=10)
-    # Some example of a remote file write
-    sftp = client.open_sftp()
-    file = sftp.open('/tmp/afileToWrite.txt', 'w')
-    file.write('Something to put in the remote file')
-    file.close()
-    sftp.close()
-
-def example_function_sftp_read():
-    client = paramiko.SSHClient()
-    client.load_system_host_keys()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    # Some example of connection
-    client.connect('some_host_4',
-                    port=22,
-                    username='root',
-                    password='root',
-                    banner_timeout=10)
-    # Some example of a remote file write
-    sftp = client.open_sftp()
-    file = sftp.open('/tmp/afileToRead.txt', 'r')
-    output = file.read()
-    file.close()
-    sftp.close()
-    return output
-
+# Actual tests
+# -- This ensures that the ParamikoMock is working as expected
 def test_example_function_1():
-    SSHMockEnvron().add_responses_for_host('some_host', 22, {
+    ParamikoMockEnviron().add_responses_for_host('some_host', 22, {
         'ls -l': SSHCommandMock('', 'ls output', '')
     }, 'root', 'root')
     with patch('paramiko.SSHClient', new=SSHClientMock): 
@@ -101,7 +70,7 @@ def test_example_function_1():
 
 def test_example_function_2():
     ssh_mock = SSHClientMock()
-    SSHMockEnvron().add_responses_for_host('some_host_2', 4826, {
+    ParamikoMockEnviron().add_responses_for_host('some_host_2', 4826, {
         'sudo docker ps': SSHCommandMock('', 'docker-ps-output', '')
     }, 'root', 'root')
     # patch the paramiko.SSHClient with the mock
@@ -117,44 +86,25 @@ def test_example_function_3():
             return StringIO(''), StringIO('value1'), StringIO('')
     
     # You can use a regexp expresion to match the command with the custom processor
-    ssh_mock = SSHClientMock()
-    SSHMockEnvron().add_responses_for_host('some_host_3', 22, {
+    ParamikoMockEnviron().add_responses_for_host('some_host_3', 22, {
         r're(custom_command .*)': SSHCommandFunctionMock(custom_command_processor) # This is a regexp command
     }, 'root', 'root')
     # patch the paramiko.SSHClient with the mock
     with patch('paramiko.SSHClient', new=SSHClientMock): 
         output = example_function_3()
         assert output == 'value1'
+    ParamikoMockEnviron().cleanup_environment()
 
 def test_example_function_verify_commands_were_called():
-    ssh_mock = SSHClientMock()
-    SSHMockEnvron().add_responses_for_host('some_host', 22, {
+    ParamikoMockEnviron().add_responses_for_host('some_host', 22, {
         're(ls.*)': SSHCommandMock('', 'ls output', '')
     }, 'root', 'root')
     with patch('paramiko.SSHClient', new=SSHClientMock):
         example_function_multiple_calls()
-        assert 'ls -l' == ssh_mock.called[0]
-        assert 'ls -al' == ssh_mock.called[1]
-
-def test_example_function_sftp_write():
-    ssh_mock = SSHClientMock()
-
-    SSHMockEnvron().add_responses_for_host('some_host_4', 22, {
-        'ls -l': SSHCommandMock('', 'ls output', '')
-    }, 'root', 'root')
-    # patch the paramiko.SSHClient with the mock
-    with patch('paramiko.SSHClient', new=SSHClientMock): 
-        example_function_sftp_write()
-        assert 'Something to put in the remote file' == ssh_mock.sftp_client_mock.sftp_file_mock.written[0]
-
-def test_example_function_sftp_read():
-    ssh_mock = SSHClientMock()
-
-    SSHMockEnvron().add_responses_for_host('some_host_4', 22, {
-        'ls -l': SSHCommandMock('', 'ls output', '')
-    }, 'root', 'root')
-    ssh_mock.sftp_client_mock.sftp_file_mock.file_content = 'Something from the remote file'
-    # patch the paramiko.SSHClient with the mock
-    with patch('paramiko.SSHClient', new=SSHClientMock): 
-        output = example_function_sftp_read()
-        assert 'Something from the remote file' == output
+        # Use the assert commands to define the expected commands
+        ParamikoMockEnviron().assert_command_executed_on_index('some_host', 22, 'ls -l', 0)
+        ParamikoMockEnviron().assert_command_executed_on_index('some_host', 22, 'ls -al', 1)
+        ParamikoMockEnviron().assert_command_was_executed('some_host', 22, 'ls -l')
+        ParamikoMockEnviron().assert_command_was_executed('some_host', 22, 'ls -al')
+        ParamikoMockEnviron().assert_command_was_not_executed('some_host', 22, 'ls -alx')
+    ParamikoMockEnviron().cleanup_environment()

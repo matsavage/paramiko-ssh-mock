@@ -1,29 +1,6 @@
-# 🚀 ParamikoMock
-
-ParamikoMock is a Python library for mocking the `paramiko` SSH client for testing purposes. It allows you to define responses for specific SSH commands and hosts, making it easier to test code that interacts with remote servers via SSH.
-
-## Version 1.0.0
-
-We are excited to announce that ParamikoMock has reached version 1.0.0! 🎉
-
-## Installation
-
-```bash
-pip install paramiko-mock
-```
-
-## Usage
-
-Here are some examples of how to use ParamikoMock:
-
-#### Example 1: Mocking SSH Commands
-
-Here is a sample script that demonstrates how to use ParamikoMock for SSH commands:
-
-```python
-from ParamikoMock import (
-        SSHCommandMock, ParamikoMockEnviron,
-        SSHClientMock
+from src.ParamikoMock import (
+    SSHCommandMock, ParamikoMockEnviron,
+    LocalFileMock, SSHClientMock, SFTPFileMock
 )
 from unittest.mock import patch
 import paramiko
@@ -59,19 +36,7 @@ def test_example_application_function_ssh():
                 ParamikoMockEnviron().assert_command_was_executed('myhost.example.ihf', 22, 'docker ps')
         
         ParamikoMockEnviron().cleanup_environment()
-```
 
-#### Example 2: Mocking SFTP Operations
-
-Here is a sample script that demonstrates how to use ParamikoMock for SFTP operations:
-
-```python
-from ParamikoMock import (
-    SSHCommandMock, ParamikoMockEnviron,
-    LocalFileMock, SSHClientMock, SFTPFileMock
-)
-from unittest.mock import patch
-import paramiko
 
 def example_application_function_sftp():
         client = paramiko.SSHClient()
@@ -121,19 +86,3 @@ def test_example_application_function_sftp():
                 assert file_on_remote.file_content == 'Some content to write'
         
         ParamikoMockEnviron().cleanup_environment()
-```
-
-## Contributing
-
-Contributions are welcome. 
-Please work on filing an issue before submitting a pull request, so that we can discuss the changes you would like to make.
-
-[Github](https://github.com/ghhwer/paramiko-ssh-mock)
-
-## License
-
-[MIT](https://choosealicense.com/licenses/mit/)
-
-## Read the Docs
-
-For more detailed documentation, please visit our [Read the Docs](TODO) page.

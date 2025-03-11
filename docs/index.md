@@ -1,20 +1,66 @@
-# 🚀 ParamikoMock
+# What is ParamikoMock?
 
-ParamikoMock is a Python library for mocking the `paramiko` SSH client for testing purposes. It allows you to define responses for specific SSH commands and hosts, making it easier to test code that interacts with remote servers via SSH.
+This is a mock library for the Paramiko SSH library. It is intended to be used in unit tests to mock SSH connections and commands.
+It supports mocking multiple hosts and multiple commands per host as well as SFTP connections.
 
-## Version 1.0.0
+## How it works?
 
-We are excited to announce that ParamikoMock has reached version 1.0.0! 🎉
+ParamikoMock is built to be used with `patch` from the `unittest.mock` module. 
+We will cover how to use on the [Usage](usage.md) page.
 
-## Installation
+We use the concept of a `Coordinator` class that manages the mock environment. 
+The `Coordinator` is a singleton class that manages the mock environment. It is responsible for creating and managing the mock environment.
+
+```mermaid
+---
+config:
+    markdownAutoWrap: true
+---
+flowchart TD
+ subgraph subGraph0["**Coordinator** (_Singleton_)"]
+                A(["ParamikoMockEnviron"])
+    end
+ subgraph subGraph1["**Patched Class**"]
+                B(["SSHClientMock"])
+    end
+ subgraph subGraph2["**Internal Representations**"]
+                C(["MockRemoteDevice"])
+                F(["LocalFilesystemMock"])
+                E(["SFTPFileSystem"])
+    end
+ subgraph subGraph3["**Mocked Paramiko Classes**"]
+                D(["SFTPClientMock"])
+    end
+ subgraph subGraph4["**User Defined Objects**"]
+                G(["LocalFileMock"])
+                H(["LocalDirectoryMock"])
+                I(["SSHCommandMock"])
+    end
+        A -- Manages --> C & F
+        B -- Uses --> C
+        B -- Opens --> D
+        C -- Has --> E
+        D <-- Uses --> F & E
+        F <-- Has --> H
+        E <-- Has --> G
+        C <-- Has --> I
+        style A fill:#aaaafa,stroke:#000,stroke-width:2px
+        style B fill:#aafaaa,stroke:#000,stroke-width:2px
+        style C fill:#aafafa,stroke:#000,stroke-width:2px
+        style F fill:#aafafa,stroke:#000,stroke-width:2px
+        style E fill:#aafafa,stroke:#000,stroke-width:2px
+        style D fill:#fafaaa,stroke:#000,stroke-width:2px
+        style G fill:#aaaafa,stroke:#000,stroke-width:2px
+        style H fill:#aaaafa,stroke:#000,stroke-width:2px
+        style I fill:#aaaafa,stroke:#000,stroke-width:2px
+```
+## Quick Start
+
+Want to get started quickly? Here is how you can install ParamikoMock:
 
 ```bash
-pip install paramiko-mock
+pip install ParamikoMock
 ```
-
-## Usage
-
-Here are some examples of how to use ParamikoMock:
 
 #### Example 1: Mocking SSH Commands
 
@@ -123,17 +169,4 @@ def test_example_application_function_sftp():
         ParamikoMockEnviron().cleanup_environment()
 ```
 
-## Contributing
-
-Contributions are welcome. 
-Please work on filing an issue before submitting a pull request, so that we can discuss the changes you would like to make.
-
-[Github](https://github.com/ghhwer/paramiko-ssh-mock)
-
-## License
-
-[MIT](https://choosealicense.com/licenses/mit/)
-
-## Read the Docs
-
-For more detailed documentation, please visit our [Read the Docs](TODO) page.
+For more examples and detailed usage, please refer to the [Usage](usage) page.
