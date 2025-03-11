@@ -1,10 +1,11 @@
-# 🚀 ParamikoMock
+# ParamikoMock
 
 ParamikoMock is a Python library for mocking the `paramiko` SSH client for testing purposes. It allows you to define responses for specific SSH commands and hosts, making it easier to test code that interacts with remote servers via SSH.
 
-## Version 1.0.0
+## Version 1.0.0 🚀
 
 We are excited to announce that ParamikoMock has reached version 1.0.0! 🎉
+For more detailed documentation, please visit our [Read the Docs](https://paramiko-ssh-mock.readthedocs.io/en/latest/) page.
 
 ## Installation
 
@@ -133,7 +134,3 @@ Please work on filing an issue before submitting a pull request, so that we can 
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
-
-## Read the Docs
-
-For more detailed documentation, please visit our [Read the Docs](TODO) page.
