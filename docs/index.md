@@ -62,12 +62,16 @@ flowchart TD
     style subGraph4 stroke:#000000,fill:#d0d0d0,color:#000000
     style s1 stroke:#000000,fill:#FFFFFF
 ```
+
+Api documentation can be found in the [API Reference](/autoapi/ParamikoMock/) page.
+The full implementation can be found in the [GitHub Repository](https://github.com/ghhwer/paramiko-ssh-mock)
+
 ## Quick Start
 
 Want to get started quickly? Here is how you can install ParamikoMock:
 
 ```bash
-pip install ParamikoMock
+pip install paramiko-mock
 ```
 
 #### Example 1: Mocking SSH Commands
