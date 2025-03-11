@@ -6,6 +6,10 @@ from .exceptions import BadSetupError
 
 # SFTPFileSystem is a class that stores the file system for the SFTPClientMock
 class SFTPFileSystem():
+    """
+    The SFPTFileSystem class stores the file system for the SFTPClientMock.
+    __This is mainly an internal class and should not be used directly.__
+    """
     file_system: dict[str, "SFTPFileMock"] = {}
 
     def add_file(self, path, content):
@@ -18,6 +22,9 @@ class SFTPFileSystem():
         self.file_system.pop(path, None)
 
 class SFTPFileMock():
+    """
+    This class mocks a file in the remote filesystem.
+    """
     write_history = []
     file_content = None
 
@@ -32,6 +39,10 @@ class SFTPFileMock():
         return self.file_content
 
 class SFTPClientMock():
+    """
+    The SFTPClientMock class mocks the paramiko.SFTPClient class.
+    __This is mainly an internal class and should not be used directly.__
+    """
     def __init__(self, file_system:SFTPFileSystem=None, local_filesystem:LocalFilesystemMock=None):
         if file_system is None:
             raise BadSetupError("file_system is required")

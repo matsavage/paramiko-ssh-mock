@@ -6,6 +6,10 @@ from .sftp_mock import SFTPClientMock
 from .mocked_env import ParamikoMockEnviron
 
 class SSHClientMock():
+    """
+    The SSHClientMock is a class that mocks the paramiko.SSHClient class.
+    This class is intended to be patched in place of the paramiko.SSHClient class.
+    """
     def __init__(self, *args, **kwds):
         self.device = None
         self.sftp_client_mock = None
@@ -79,11 +83,24 @@ class SSHClientMock():
 
 
 class SSHResponseMock(ABC):
+    """
+    The SSHResponseMock is a generic class that represents a response for a command.
+    This can be used to create custom responses for commands that would invoke a callback.
+    """
     @abstractmethod
     def __call__(self, ssh_client_mock: SSHClientMock, command:str):
         pass
 
 class SSHCommandMock(SSHResponseMock):
+    """
+    SSHCommandMock is a class that represents a response for a command.
+    It's constructed with the stdin, stdout, and stderr that the command will return.
+    
+    When called the instance of this class will return a tuple of StringIO objects.
+    - stdin: The stdin of the command.
+    - stdout: The stdout of the command.
+    - stderr: The stderr of the command.
+    """
     def __init__(self, stdin, stdout, stderr):
         self.stdin = stdin
         self.stdout = stdout
