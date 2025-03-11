@@ -88,7 +88,16 @@ class SSHResponseMock(ABC):
     This can be used to create custom responses for commands that would invoke a callback.
     """
     @abstractmethod
-    def __call__(self, ssh_client_mock: SSHClientMock, command:str):
+    def __call__(self, ssh_client_mock: SSHClientMock, command:str) -> tuple[StringIO, StringIO, StringIO]:
+        """
+        A method that should be implemented by the subclasses.
+        This method is called when the command is executed
+        
+        - ssh_client_mock: The SSHClientMock instance that is executing the command.
+        - command: The command that is being executed.
+        
+        Returns: A tuple of StringIO objects.
+        """
         pass
 
 class SSHCommandMock(SSHResponseMock):
@@ -97,6 +106,7 @@ class SSHCommandMock(SSHResponseMock):
     It's constructed with the stdin, stdout, and stderr that the command will return.
     
     When called the instance of this class will return a tuple of StringIO objects.
+    
     - stdin: The stdin of the command.
     - stdout: The stdout of the command.
     - stderr: The stderr of the command.

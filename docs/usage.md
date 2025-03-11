@@ -12,7 +12,7 @@ When using ParamikoMock you will only need to interact with the following classe
 
 The class `SSHClientMock` is used but only for patching the `paramiko.SSHClient` class.
 
-# Setting up the environment
+## Setting up the environment
 
 The `ParamikoMockEnviron` class is used to manage the mock environment.
 You can read more about the methods available in the [API Reference](api#ParamikoMockEnviron).
@@ -115,6 +115,49 @@ class ParamikoMockTestCase(unittest.TestCase):
 
 Extending `unittest.TestCase` can help you to manage the environment for your tests. 
 The `setup_and_teardown` method is used to setup and teardown the environment for your tests.
+
+## Setting up the environment for SSH operations
+
+The `ParamikoMockEnviron` class can be used to manage the environment for SSH operations.
+You can either use `SSHCommandMock` to define the output of a command or define a custom class that implements the abstract class: `SSHResponseMock`.
+
+Use the `SSHCommandMock` class to define the output of a command:
+```python
+from ParamikoMock import ParamikoMockEnviron, SSHCommandMock
+# ...
+# Setup the environment for SSH operations
+ParamikoMockEnviron().add_responses_for_host('myhost.example.ihf', 22, {
+        're(ls.*)': SSHCommandMock('', 'ls output', ''),
+        'docker ps': SSHCommandMock('', 'docker ps output', ''),
+}, 'root', 'root')
+# ...
+```
+
+Implementing a custom class that extends `SSHResponseMock`:
+```python
+from ParamikoMock import SSHResponseMock, ParamikoMockEnviron, SSHClientMock
+from io import StringIO
+
+# ...
+# Define a custom class that extends SSHResponseMock
+class MyCustomSSHResponse(SSHResponseMock):
+    def __init__(self, *args, **kwargs):
+        pass
+        # You can initialize any custom attributes here
+    
+    def __call__(self, ssh_client_mock: SSHClientMock, command:str) -> tuple[StringIO, StringIO, StringIO]:
+        # any custom logic here, you can use the command to determine the output 
+        # or the ssh_client_mock to get information about the connection
+        command_output = ssh_client_mock.device.host + ' ' + command
+        # Output should be in the form of (stdin, stdout, stderr)
+        return StringIO(""), StringIO(command_output), StringIO("")
+
+# Setup the environment for SSH operations
+ParamikoMockEnviron().add_responses_for_host('myhost.example.ihf', 22, {
+        're(ls.*)': MyCustomSSHResponse(), # Register the custom class
+}, 'root', 'root')
+# ...
+```
 
 ## Setting up the environment for SFTP operations
 
