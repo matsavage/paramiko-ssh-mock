@@ -1,7 +1,7 @@
 import paramiko
 from io import StringIO
 from src.ParamikoMock.mocked_env import ParamikoMockEnviron
-from src.ParamikoMock.ssh_mock import SSHClientMock, SSHCommandMock, SSHCommandFunctionMock
+from src.ParamikoMock.ssh_mock import SSHClientMock, SSHCommandMock, SSHCommandFunctionMock, SSHResponseMock
 from src.ParamikoMock.sftp_mock import SFTPClientMock, SFTPFileMock 
 from unittest.mock import patch
 
@@ -107,4 +107,25 @@ def test_example_function_verify_commands_were_called():
         ParamikoMockEnviron().assert_command_was_executed('some_host', 22, 'ls -l')
         ParamikoMockEnviron().assert_command_was_executed('some_host', 22, 'ls -al')
         ParamikoMockEnviron().assert_command_was_not_executed('some_host', 22, 'ls -alx')
+    ParamikoMockEnviron().cleanup_environment()
+
+class MyCustomSSHResponse(SSHResponseMock):
+    def __init__(self, *args, **kwargs):
+        pass
+        # You can initialize any custom attributes here
+    
+    def __call__(self, ssh_client_mock: SSHClientMock, command:str) -> tuple[StringIO, StringIO, StringIO]:
+        # any custom logic here, you can use the command to determine the output 
+        # or the ssh_client_mock to get information about the connection
+        command_output = ssh_client_mock.device.host + ' ' + command
+        # Output should be in the form of (stdin, stdout, stderr)
+        return StringIO(""), StringIO(command_output), StringIO("")
+
+def test_custom_class():
+    ParamikoMockEnviron().add_responses_for_host('some_host', 22, {
+        're(ls.*)': MyCustomSSHResponse()
+    }, 'root', 'root')
+    with patch('paramiko.SSHClient', new=SSHClientMock):
+        output = example_function_1()
+        assert output == 'some_host ls -l'
     ParamikoMockEnviron().cleanup_environment()
